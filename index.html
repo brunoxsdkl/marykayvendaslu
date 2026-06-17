@@ -17,7 +17,6 @@
   --pink-500: #ec407a;
   --pink-600: #d81b60;
   --pink-700: #c2185b;
-  --rose-gold: #e8a87c;
   --glass-bg: rgba(255, 255, 255, 0.15);
   --glass-border: rgba(255, 255, 255, 0.25);
   --glass-shadow: rgba(0, 0, 0, 0.1);
@@ -25,8 +24,8 @@
   --text-secondary: #555;
   --gradient-1: linear-gradient(135deg, #fce4ec 0%, #f8bbd0 50%, #f48fb1 100%);
   --gradient-2: linear-gradient(135deg, #d81b60, #c2185b, #880e4f);
-  --gradient-3: linear-gradient(135deg, rgba(216, 27, 96, 0.1), rgba(192, 24, 91, 0.05));
 }
+html { scroll-behavior: smooth; }
 body {
   font-family: 'Inter', sans-serif;
   background: var(--gradient-1);
@@ -34,27 +33,39 @@ body {
   color: var(--text-primary);
   overflow-x: hidden;
 }
-body::before {
-  content: '';
+
+/* Floating Particles */
+.particles {
   position: fixed;
-  top: -50%;
-  right: -50%;
-  width: 100%;
-  height: 100%;
-  background: radial-gradient(circle, rgba(248,187,208,0.3) 0%, transparent 70%);
+  inset: 0;
   pointer-events: none;
   z-index: 0;
+  overflow: hidden;
 }
-body::after {
-  content: '';
-  position: fixed;
-  bottom: -50%;
-  left: -50%;
-  width: 100%;
-  height: 100%;
-  background: radial-gradient(circle, rgba(244,143,177,0.2) 0%, transparent 70%);
-  pointer-events: none;
-  z-index: 0;
+.particle {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, rgba(248,187,208,0.4), rgba(244,143,177,0.1));
+  animation: float var(--dur, 20s) ease-in-out infinite;
+  width: var(--size, 40px);
+  height: var(--size, 40px);
+  left: var(--x, 10%);
+  animation-delay: var(--delay, 0s);
+}
+.particle:nth-child(1) { --size: 60px; --x: 5%; --dur: 25s; --delay: 0s; }
+.particle:nth-child(2) { --size: 40px; --x: 15%; --dur: 20s; --delay: -3s; }
+.particle:nth-child(3) { --size: 80px; --x: 30%; --dur: 30s; --delay: -7s; }
+.particle:nth-child(4) { --size: 35px; --x: 50%; --dur: 18s; --delay: -2s; }
+.particle:nth-child(5) { --size: 55px; --x: 65%; --dur: 22s; --delay: -5s; }
+.particle:nth-child(6) { --size: 45px; --x: 78%; --dur: 26s; --delay: -9s; }
+.particle:nth-child(7) { --size: 70px; --x: 88%; --dur: 28s; --delay: -4s; }
+.particle:nth-child(8) { --size: 30px; --x: 95%; --dur: 16s; --delay: -6s; }
+@keyframes float {
+  0%, 100% { transform: translateY(100vh) scale(0); opacity: 0; }
+  10% { opacity: 0.6; }
+  50% { opacity: 0.3; transform: translateY(40vh) scale(1); }
+  90% { opacity: 0.1; }
+  100% { transform: translateY(-10vh) scale(0.5); opacity: 0; }
 }
 
 /* Scrollbar */
@@ -242,6 +253,12 @@ body::after {
   cursor: pointer;
   position: relative;
   box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  opacity: 0;
+  transform: translateY(30px);
+}
+.product-card.visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 .product-card::before {
   content: '';
@@ -262,6 +279,32 @@ body::after {
   transform: translateY(-8px);
   box-shadow: 0 24px 80px rgba(216,27,96,0.18);
   border-color: rgba(216,27,96,0.15);
+}
+.product-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 3;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: white;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+}
+.product-badge.bestseller {
+  background: linear-gradient(135deg, #FF6B35, #E8491D);
+}
+.product-badge.lancamento {
+  background: linear-gradient(135deg, #00C9A7, #00A88F);
+}
+.product-badge.premium {
+  background: linear-gradient(135deg, #D4AF37, #B8942E);
+}
+.product-badge.kit {
+  background: linear-gradient(135deg, #7C3AED, #6D28D9);
 }
 .product-img-wrap {
   width: 100%;
@@ -325,6 +368,16 @@ body::after {
   font-weight: 500;
   color: var(--text-secondary);
 }
+.product-installments {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+  font-weight: 400;
+}
+.product-installments strong {
+  color: var(--pink-500);
+  font-weight: 600;
+}
 .add-to-cart {
   position: absolute;
   bottom: 20px;
@@ -351,13 +404,152 @@ body::after {
   box-shadow: 0 6px 24px rgba(216,27,96,0.3);
 }
 
+/* Product Modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  backdrop-filter: blur(8px);
+  z-index: 3000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.modal-overlay.open { display: flex; opacity: 1; }
+.modal {
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(30px);
+  border-radius: 20px;
+  max-width: 640px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 32px 80px rgba(0,0,0,0.2);
+  transform: scale(0.9) translateY(20px);
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.modal-overlay.open .modal { transform: scale(1) translateY(0); }
+.modal-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0,0,0,0.05);
+  cursor: pointer;
+  font-size: 16px;
+  color: var(--text-secondary);
+  transition: all 0.3s;
+  z-index: 2;
+}
+.modal-close:hover { background: rgba(0,0,0,0.1); }
+.modal-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+}
+.modal-img {
+  background: linear-gradient(135deg, rgba(252,228,236,0.3), rgba(248,187,208,0.15));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  min-height: 300px;
+}
+.modal-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 8px 24px rgba(216,27,96,0.12));
+}
+.modal-info {
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.modal-info .product-category {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--pink-400);
+}
+.modal-info h2 {
+  font-size: 22px;
+  font-weight: 700;
+  font-family: 'Playfair Display', serif;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+.modal-info .product-price {
+  font-size: 28px;
+}
+.modal-info .product-installments {
+  font-size: 14px;
+}
+.modal-desc {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  margin: 4px 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+.modal-add-btn {
+  flex: 1;
+  padding: 14px;
+  border: none;
+  border-radius: 12px;
+  background: var(--gradient-2);
+  color: white;
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 4px 15px rgba(216,27,96,0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.modal-add-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(216,27,96,0.35); }
+.modal-site-btn {
+  padding: 14px 20px;
+  border: 1px solid rgba(216,27,96,0.2);
+  border-radius: 12px;
+  background: transparent;
+  color: var(--pink-600);
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.modal-site-btn:hover { background: rgba(216,27,96,0.05); border-color: var(--pink-400); }
+
 /* Cart Sidebar */
 .cart-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   background: rgba(0,0,0,0.3);
   backdrop-filter: blur(5px);
   z-index: 2000;
@@ -389,11 +581,7 @@ body::after {
   align-items: center;
   justify-content: space-between;
 }
-.cart-header h3 {
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--text-primary);
-}
+.cart-header h3 { font-size: 18px; font-weight: 700; }
 .cart-close {
   width: 36px;
   height: 36px;
@@ -406,11 +594,7 @@ body::after {
   transition: all 0.3s;
 }
 .cart-close:hover { background: rgba(0,0,0,0.1); }
-.cart-items {
-  flex: 1;
-  overflow-y: auto;
-  padding: 16px 24px;
-}
+.cart-items { flex: 1; overflow-y: auto; padding: 16px 24px; }
 .cart-empty {
   text-align: center;
   padding: 60px 20px;
@@ -499,11 +683,7 @@ body::after {
   box-shadow: 0 4px 15px rgba(37,211,102,0.3);
 }
 .whatsapp-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(37,211,102,0.4); }
-.whatsapp-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  transform: none;
-}
+.whatsapp-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
 /* Toast */
 .toast {
@@ -514,11 +694,11 @@ body::after {
   background: rgba(0,0,0,0.8);
   backdrop-filter: blur(10px);
   color: white;
-  padding: 12px 24px;
+  padding: 14px 28px;
   border-radius: 12px;
   font-size: 14px;
   font-weight: 500;
-  z-index: 3000;
+  z-index: 5000;
   opacity: 0;
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   pointer-events: none;
@@ -536,11 +716,7 @@ body::after {
 .loading i { animation: spin 1s linear infinite; }
 
 /* Search */
-.search-wrap {
-  position: relative;
-  flex: 1;
-  max-width: 400px;
-}
+.search-wrap { position: relative; flex: 1; max-width: 400px; }
 .search-wrap input {
   width: 100%;
   padding: 10px 16px 10px 40px;
@@ -562,6 +738,126 @@ body::after {
   font-size: 14px;
 }
 
+/* Back to Top */
+.back-to-top {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: none;
+  background: var(--gradient-2);
+  color: white;
+  font-size: 18px;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(216,27,96,0.3);
+  transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transform: translateY(20px);
+  pointer-events: none;
+}
+.back-to-top.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+.back-to-top:hover { transform: translateY(-4px); box-shadow: 0 8px 30px rgba(216,27,96,0.4); }
+
+/* Footer */
+.footer {
+  position: relative;
+  z-index: 1;
+  background: rgba(255,255,255,0.5);
+  backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(255,255,255,0.3);
+  padding: 48px 24px 32px;
+  margin-top: 40px;
+}
+.footer-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1.5fr;
+  gap: 40px;
+}
+.footer-brand h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  font-weight: 800;
+  background: var(--gradient-2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 8px;
+}
+.footer-brand p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  max-width: 300px;
+}
+.footer h4 {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--pink-600);
+  margin-bottom: 16px;
+}
+.footer-links { list-style: none; }
+.footer-links li { margin-bottom: 10px; }
+.footer-links a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 14px;
+  transition: color 0.2s;
+}
+.footer-links a:hover { color: var(--pink-600); }
+.footer-contact p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.footer-contact i { color: var(--pink-400); width: 18px; }
+.footer-contact .whatsapp-link {
+  color: #25D366;
+  font-weight: 600;
+  text-decoration: none;
+}
+.footer-contact .whatsapp-link:hover { text-decoration: underline; }
+.footer-social {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+.footer-social a {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(216,27,96,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--pink-600);
+  text-decoration: none;
+  transition: all 0.3s;
+  font-size: 16px;
+}
+.footer-social a:hover { background: var(--pink-600); color: white; transform: translateY(-2px); }
+.footer-bottom {
+  max-width: 1400px;
+  margin: 32px auto 0;
+  padding-top: 20px;
+  border-top: 1px solid rgba(0,0,0,0.05);
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .header { padding: 0 16px; height: 60px; }
@@ -576,16 +872,35 @@ body::after {
   .product-name { font-size: 14px; }
   .product-price { font-size: 18px; }
   .product-img-wrap { padding: 20px; }
+  .product-installments { font-size: 11px; }
   .add-to-cart { width: 36px; height: 36px; font-size: 13px; bottom: 14px; right: 14px; }
   .cart-sidebar { width: 100vw; }
+  .modal-body { grid-template-columns: 1fr; }
+  .modal-img { min-height: 200px; padding: 24px; }
+  .modal-info { padding: 24px; }
+  .modal-info h2 { font-size: 18px; }
+  .back-to-top { width: 40px; height: 40px; font-size: 15px; bottom: 20px; right: 20px; }
+  .footer-inner { grid-template-columns: 1fr 1fr; gap: 32px; }
 }
 @media (max-width: 480px) {
   .products-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
   .product-img-wrap { padding: 16px; }
+  .footer-inner { grid-template-columns: 1fr; gap: 24px; }
 }
 </style>
 </head>
 <body>
+
+<div class="particles" aria-hidden="true">
+  <div class="particle"></div>
+  <div class="particle"></div>
+  <div class="particle"></div>
+  <div class="particle"></div>
+  <div class="particle"></div>
+  <div class="particle"></div>
+  <div class="particle"></div>
+  <div class="particle"></div>
+</div>
 
 <!-- Header -->
 <header class="header">
@@ -622,6 +937,14 @@ body::after {
   <div class="products-grid" id="productsGrid"></div>
 </section>
 
+<!-- Product Modal -->
+<div class="modal-overlay" id="productModal">
+  <div class="modal" style="position:relative">
+    <button class="modal-close" onclick="closeModal()"><i class="fas fa-times"></i></button>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
 <!-- Cart -->
 <div class="cart-overlay" id="cartOverlay" onclick="toggleCart()"></div>
 <div class="cart-sidebar" id="cartSidebar">
@@ -650,6 +973,55 @@ body::after {
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 
+<!-- Back to Top -->
+<button class="back-to-top" id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+  <i class="fas fa-arrow-up"></i>
+</button>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <h3>Mary Kay</h3>
+      <p>Catálogo online oficial de Junho 2026. Produtos originais com garantia de qualidade e beleza.</p>
+    </div>
+    <div>
+      <h4>Categorias</h4>
+      <ul class="footer-links">
+        <li><a href="#" onclick="setCategory('Maquiagem');return false">Maquiagem</a></li>
+        <li><a href="#" onclick="setCategory('Cuidados Faciais');return false">Cuidados Faciais</a></li>
+        <li><a href="#" onclick="setCategory('Fragrâncias');return false">Fragrâncias</a></li>
+        <li><a href="#" onclick="setCategory('Cuidados Corporais');return false">Cuidados Corporais</a></li>
+        <li><a href="#" onclick="setCategory('Kits');return false">Kits & Promoções</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Links</h4>
+      <ul class="footer-links">
+        <li><a href="https://loja.marykay.com.br" target="_blank">Loja Oficial</a></li>
+        <li><a href="https://www.marykay.com.br" target="_blank">Site Mary Kay</a></li>
+        <li><a href="#">Política de Privacidade</a></li>
+        <li><a href="#">Trocas e Devoluções</a></li>
+      </ul>
+    </div>
+    <div class="footer-contact">
+      <h4>Consultora</h4>
+      <p><i class="fab fa-whatsapp"></i> <a href="https://wa.me/5541988521663" class="whatsapp-link" target="_blank">(41) 98852-1663</a></p>
+      <p><i class="fas fa-map-marker-alt"></i> Curitiba, PR</p>
+      <p><i class="fas fa-envelope"></i> Atendimento via WhatsApp</p>
+      <div class="footer-social">
+        <a href="https://wa.me/5541988521663" target="_blank" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+        <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+        <a href="#" aria-label="Pinterest"><i class="fab fa-pinterest"></i></a>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>&copy; 2026 Mary Kay Catálogo Online. Todos os direitos reservados. Desenvolvido para Consultora Independente Mary Kay.</p>
+  </div>
+</footer>
+
 <script>
 const WHATSAPP_NUMBER = '5541988521663';
 let products = [];
@@ -672,11 +1044,33 @@ async function loadProducts() {
   }
 }
 
+function getBadge(p) {
+  const name = (p.name || '').toLowerCase();
+  const cat = (p.category || '').toLowerCase();
+  if (name.includes('kit') || cat.includes('kit')) return { text: 'Kit Especial', cls: 'kit' };
+  if (name.includes('lançamento') || name.includes('novo') || name.includes('protetor solar')) return { text: 'Lançamento', cls: 'lancamento' };
+  if (p.price >= 200) return { text: 'Premium', cls: 'premium' };
+  if (['base', 'batom', 'máscara de cílios', 'mascara de cilios', 'blush'].includes(cat)) return { text: 'Mais Vendido', cls: 'bestseller' };
+  if (name.includes('sistema') || name.includes('avançado') || name.includes('completo')) return { text: 'Kit Especial', cls: 'kit' };
+  return null;
+}
+
+function getInstallments(price) {
+  if (price <= 20) return null;
+  const maxParcel = price >= 300 ? 6 : 3;
+  const parcelValue = price / maxParcel;
+  return { qty: maxParcel, value: parcelValue };
+}
+
 function getCategories() {
   const cats = new Set();
   cats.add('todos');
   products.forEach(p => {
     if (p.category) cats.add(p.category);
+    if (p.category_path) {
+      const parts = p.category_path.split('/');
+      if (parts.length >= 2) cats.add(parts[0]);
+    }
   });
   return Array.from(cats);
 }
@@ -698,6 +1092,7 @@ function setCategory(cat) {
     btn.classList.toggle('active', btn.textContent.trim() === (cat === 'todos' ? 'Todos' : cat));
   });
   renderProducts();
+  window.scrollTo({ top: document.querySelector('.products-section').offsetTop - 80, behavior: 'smooth' });
 }
 
 function filterProducts() {
@@ -707,7 +1102,7 @@ function filterProducts() {
 function renderProducts() {
   const search = document.getElementById('searchInput').value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
   const filtered = products.filter(p => {
-    const matchCat = currentCategory === 'todos' || p.category === currentCategory;
+    const matchCat = currentCategory === 'todos' || p.category === currentCategory || (p.category_path && p.category_path.startsWith(currentCategory));
     const name = (p.name || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     const matchSearch = !search || name.includes(search);
     return matchCat && matchSearch;
@@ -717,13 +1112,16 @@ function renderProducts() {
     grid.innerHTML = '<div style="text-align:center;padding:60px 20px;color:var(--text-secondary);grid-column:1/-1"><i class="fas fa-search" style="font-size:40px;color:var(--pink-300);margin-bottom:16px;display:block"></i>Nenhum produto encontrado</div>';
     return;
   }
-  grid.innerHTML = filtered.map(p => {
+  grid.innerHTML = filtered.map((p, idx) => {
     const price = p.price || 0;
     const imgUrl = p.image || 'https://marykay.vtexassets.com/arquivos/ids/158059/Base.png';
     const inCart = cart.find(c => c.id === p.id);
+    const badge = getBadge(p);
+    const inst = getInstallments(price);
     return `
-    <div class="product-card">
-      <div class="product-img-wrap" onclick="quickAdd('${p.id}')">
+    <div class="product-card" data-index="${idx}" onclick="openModal('${p.id}')">
+      ${badge ? `<div class="product-badge ${badge.cls}">${badge.text}</div>` : ''}
+      <div class="product-img-wrap">
         <img src="${imgUrl}" alt="${p.name}" loading="lazy"
           onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%23f8bbd0%22 width=%22100%22 height=%22100%22/><text x=%2250%22 y=%2255%22 text-anchor=%22middle%22 font-size=%2212%22 fill=%22%23d81b60%22>MK</text></svg>'">
       </div>
@@ -731,12 +1129,65 @@ function renderProducts() {
         <div class="product-category">${p.category || 'Mary Kay'}</div>
         <div class="product-name">${p.name}</div>
         <div class="product-price">R$ ${price.toFixed(2).replace('.', ',')} <small>à vista</small></div>
+        ${inst ? `<div class="product-installments">ou <strong>${inst.qty}x de R$ ${inst.value.toFixed(2).replace('.', ',')}</strong> sem juros</div>` : ''}
       </div>
       <button class="add-to-cart" onclick="event.stopPropagation(); addToCart('${p.id}')" title="Adicionar ao carrinho">
         <i class="fas ${inCart ? 'fa-check' : 'fa-plus'}"></i>
       </button>
     </div>`;
   }).join('');
+  observeCards();
+}
+
+function observeCards() {
+  const cards = document.querySelectorAll('.product-card');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => entry.target.classList.add('visible'), i * 60);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+  cards.forEach(c => observer.observe(c));
+}
+
+function openModal(id) {
+  const p = products.find(x => x.id === id);
+  if (!p) return;
+  const price = p.price || 0;
+  const imgUrl = p.image || '';
+  const badge = getBadge(p);
+  const inst = getInstallments(price);
+  const inCart = cart.find(c => c.id === p.id);
+  const desc = p.description ? p.description.replace(/<[^>]*>/g, '').trim().substring(0, 200) : '';
+  document.getElementById('modalBody').innerHTML = `
+    <div class="modal-img">
+      <img src="${imgUrl}" alt="${p.name}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%23f8bbd0%22 width=%22100%22 height=%22100%22/><text x=%2250%22 y=%2255%22 text-anchor=%22middle%22 font-size=%2212%22 fill=%22%23d81b60%22>MK</text></svg>'">
+    </div>
+    <div class="modal-info">
+      ${badge ? `<span class="product-badge ${badge.cls}" style="position:static;display:inline-block;width:fit-content">${badge.text}</span>` : ''}
+      <div class="product-category">${p.category || 'Mary Kay'}</div>
+      <h2>${p.name}</h2>
+      <div class="product-price">R$ ${price.toFixed(2).replace('.', ',')} <small>à vista</small></div>
+      ${inst ? `<div class="product-installments">ou <strong>${inst.qty}x de R$ ${inst.value.toFixed(2).replace('.', ',')}</strong> sem juros</div>` : ''}
+      ${desc ? `<p class="modal-desc">${desc}...</p>` : ''}
+      <div class="modal-actions">
+        <button class="modal-add-btn" onclick="addToCart('${p.id}'); closeModal();">
+          <i class="fas ${inCart ? 'fa-check' : 'fa-plus'}"></i> ${inCart ? 'No Carrinho' : 'Adicionar ao Carrinho'}
+        </button>
+        <a href="https://loja.marykay.com.br/${p.link || ''}/p" target="_blank" class="modal-site-btn">
+          <i class="fas fa-external-link-alt"></i>
+        </a>
+      </div>
+    </div>`;
+  document.getElementById('productModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  document.getElementById('productModal').classList.remove('open');
+  document.body.style.overflow = '';
 }
 
 function addToCart(id) {
@@ -752,10 +1203,6 @@ function addToCart(id) {
   showToast(`${product.name} adicionado ao carrinho!`);
 }
 
-function quickAdd(id) {
-  addToCart(id);
-}
-
 function removeFromCart(id) {
   cart = cart.filter(c => c.id !== id);
   updateCartUI();
@@ -765,31 +1212,19 @@ function changeQty(id, delta) {
   const item = cart.find(c => c.id === id);
   if (!item) return;
   item.qty += delta;
-  if (item.qty <= 0) {
-    removeFromCart(id);
-    return;
-  }
+  if (item.qty <= 0) { removeFromCart(id); return; }
   updateCartUI();
 }
 
 function updateCartUI() {
   const totalItems = cart.reduce((s, c) => s + c.qty, 0);
   const badge = document.getElementById('cartBadge');
-  if (totalItems > 0) {
-    badge.style.display = 'flex';
-    badge.textContent = totalItems;
-  } else {
-    badge.style.display = 'none';
-  }
+  if (totalItems > 0) { badge.style.display = 'flex'; badge.textContent = totalItems; }
+  else { badge.style.display = 'none'; }
 
   const container = document.getElementById('cartItems');
   if (cart.length === 0) {
-    container.innerHTML = `
-      <div class="cart-empty">
-        <i class="fas fa-shopping-bag"></i>
-        <p>Seu carrinho está vazio</p>
-        <p style="font-size:13px;margin-top:4px">Adicione produtos para começar</p>
-      </div>`;
+    container.innerHTML = `<div class="cart-empty"><i class="fas fa-shopping-bag"></i><p>Seu carrinho está vazio</p><p style="font-size:13px;margin-top:4px">Adicione produtos para começar</p></div>`;
   } else {
     container.innerHTML = cart.map(c => `
       <div class="cart-item">
@@ -809,34 +1244,28 @@ function updateCartUI() {
       </div>
     `).join('');
   }
-
   const total = cart.reduce((s, c) => s + c.price * c.qty, 0);
   document.getElementById('cartTotal').textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
   document.getElementById('whatsappBtn').disabled = cart.length === 0;
 
-  // Update add-to-cart buttons
   document.querySelectorAll('.add-to-cart').forEach(btn => {
     const card = btn.closest('.product-card');
     if (!card) return;
-    const imgWrap = card.querySelector('.product-img-wrap');
-    if (!imgWrap) return;
     const idx = Array.from(document.querySelectorAll('.product-card')).indexOf(card);
     if (idx === -1) return;
     const filtered = getFilteredProducts();
     const p = filtered[idx];
     if (!p) return;
-    const inCart = cart.find(c => c.id === p.id);
-    btn.innerHTML = inCart ? '<i class="fas fa-check"></i>' : '<i class="fas fa-plus"></i>';
+    btn.innerHTML = cart.find(c => c.id === p.id) ? '<i class="fas fa-check"></i>' : '<i class="fas fa-plus"></i>';
   });
 }
 
 function getFilteredProducts() {
   const search = document.getElementById('searchInput').value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
   return products.filter(p => {
-    const matchCat = currentCategory === 'todos' || p.category === currentCategory;
+    const matchCat = currentCategory === 'todos' || p.category === currentCategory || (p.category_path && p.category_path.startsWith(currentCategory));
     const name = (p.name || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-    const matchSearch = !search || name.includes(search);
-    return matchCat && matchSearch;
+    return matchCat && (!search || name.includes(search));
   });
 }
 
@@ -860,8 +1289,7 @@ function sendWhatsApp() {
   message += `\n*Total: R$ ${total.toFixed(2).replace('.', ',')}*\n\n`;
   message += '👤 *Cliente:* (a confirmar)\n📍 *Entrega:* (a confirmar)\n💳 *Pagamento:* (a confirmar)\n\n';
   message += '_Pedido gerado via catálogo online_';
-  const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
-  window.open(url, '_blank');
+  window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`, '_blank');
 }
 
 function showToast(msg) {
@@ -871,6 +1299,21 @@ function showToast(msg) {
   clearTimeout(toast._timer);
   toast._timer = setTimeout(() => toast.classList.remove('show'), 2500);
 }
+
+// Back to top visibility
+window.addEventListener('scroll', () => {
+  document.getElementById('backToTop').classList.toggle('show', window.scrollY > 400);
+});
+
+// Close modal on overlay click
+document.getElementById('productModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+// Escape key
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closeModal(); if (document.getElementById('cartSidebar').classList.contains('open')) toggleCart(); }
+});
 
 loadProducts();
 </script>
